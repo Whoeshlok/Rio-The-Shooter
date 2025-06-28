@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Over - Rio the Shooter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* When outro is shown, hide body overflow */
+        body.outro-active {
+            overflow: hidden;
+        }
+
+        .game-over-content {
+            text-align: center;
+            animation: gameOverFadeIn 0.8s ease-out;
+        }
+
+        .game-over-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 3rem;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.5),
+                0 0 40px rgba(255, 255, 255, 0.3),
+                0 0 60px rgba(255, 255, 255, 0.1);
+            animation: gameOverGlow 2s ease-in-out infinite alternate;
+        }
+
+        .score-display {
+            display: flex;
+            gap: 3rem;
+            margin-bottom: 3rem;
+            justify-content: center;
+        }
+
+        .score-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            min-width: 200px;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .score-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 15px 45px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .score-label {
+            display: block;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .score-value {
+            display: block;
+            font-size: 3rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .quit-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1rem 3rem;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            margin-top: 2rem;
+        }
+
+        .quit-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 15px 45px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .quit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        @keyframes gameOverFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes gameOverGlow {
+            from {
+                text-shadow: 
+                    0 0 20px rgba(255, 255, 255, 0.5),
+                    0 0 40px rgba(255, 255, 255, 0.3),
+                    0 0 60px rgba(255, 255, 255, 0.1);
+            }
+            to {
+                text-shadow: 
+                    0 0 30px rgba(255, 255, 255, 0.7),
+                    0 0 60px rgba(255, 255, 255, 0.5),
+                    0 0 90px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .game-over-title {
+                font-size: 2.5rem;
+            }
+            
+            .score-display {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .score-item {
+                min-width: auto;
+                padding: 1.5rem;
+            }
+        }
+
+        /* Outro content styles */
+        .outro-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            margin: 0;
+            padding: 0;
+        }
+
+        #bokehCanvas, #outroStars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .outro-inner {
+            text-align: center;
+            color: white;
+            z-index: 10;
+            position: relative;
+        }
+
+        .outro-inner h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .social, .contact {
+            margin: 1rem 0;
+            font-size: 1.1rem;
+            animation: fadeInUpSocial 0.8s ease-out;
+        }
+
+        .contact {
+            animation: fadeInUpContact 0.8s ease-out 0.2s both;
+        }
+
+        .social:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .icon {
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        #backToHomeBtn {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #a1c4fd 0%, #fbc2eb 100%);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 20px #a1c4fd66;
+            transition: background 0.3s, transform 0.2s;
+            margin-top: 2rem;
+        }
+
+        #backToHomeBtn:hover {
+            background: linear-gradient(135deg, #fbc2eb 0%, #a1c4fd 100%);
+            transform: scale(1.07);
+        }
+
+        .social-link {
+            color: #7ecfff;
+            text-decoration: none;
+            transition: transform 0.18s, color 0.18s;
+            display: inline-block;
+        }
+
+        .social-link:hover {
+            color: #fcb69f;
+            transform: scale(1.12);
+        }
+
+        @keyframes fadeInUpSocial {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUpContact {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-over-content">
+        <h1 class="game-over-title">GAME OVER</h1>
+        <div class="score-display">
+            <div class="score-item">
+                <span class="score-label">Current Score</span>
+                <span class="score-value" id="currentScoreDisplay">0</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">High Score</span>
+                <span class="score-value" id="highScoreDisplay">0</span>
+            </div>
+        </div>
+        <button id="quitBtn" class="quit-btn">Quit</button>
+        <audio id="gameOverMusic">
+            <source src="gameover.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <!-- Background stars canvas -->
+    <canvas id="backgroundStars" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+    "></canvas>
+
+    <!-- Outro content (initially hidden) -->
+    <div id="outroContent" class="outro-content" style="display: none;">
+        <canvas id="bokehCanvas"></canvas>
+        <canvas id="outroStars"></canvas>
+        <div class="outro-inner">
+            <h2>Thanks for Playing!</h2>
+            <div class="social">
+                <span class="icon">
+                  <svg width="1.4em" height="1.4em" viewBox="0 0 448 512" fill="white" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="80" y="80" width="288" height="288" rx="72" fill="none" stroke="white" stroke-width="32"/>
+                    <circle cx="224" cy="224" r="64" fill="none" stroke="white" stroke-width="32"/>
+                    <circle cx="320" cy="128" r="16" fill="white"/>
+                  </svg>
+                </span>
+                Instagram:<br><b><a href="https://instagram.com/aliveeshlok" target="_blank" class="social-link">@aliveeshlok</a></b>
+            </div>
+            <div class="contact">
+                <span class="icon">
+                  <svg viewBox="0 0 512 512" width="1em" height="1em" fill="#EA4335" xmlns="http://www.w3.org/2000/svg"><path d="M502.3 190.8L327.4 338.3c-15.9 13.2-39 13.2-54.9 0L9.7 190.8C3.9 185.7 0 177.9 0 169.6V96c0-26.5 21.5-48 48-48h416c26.5 0 48 21.5 48 48v73.6c0 8.3-3.9 16.1-9.7 21.2zM464 80H48c-8.8 0-16 7.2-16 16v6.1l224 186.1 224-186.1V96c0-8.8-7.2-16-16-16zm48 113.6v208c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48v-208l218.5 181.5c27.6 22.9 68.4 22.9 96 0L512 193.6z"/></svg>
+                </span>
+                Contact: <b><a href="mailto:eshloktandon28@gmail.com" class="social-link">eshloktandon28@gmail.com</a></b>
+            </div>
+            <div class="social">
+                <span class="icon">
+                  <svg viewBox="0 0 496 512" width="1em" height="1em" fill="#333" xmlns="http://www.w3.org/2000/svg"><path d="M165.9 397.4c0 2-2.3 3.7-5.2 3.7-2.9 .1-5.2-1.6-5.2-3.6 0-2 2.3-3.7 5.2-3.7 2.9-.1 5.2 1.6 5.2 3.6zm-30.4-3.2c-.7 2.1 1.6 4.3 4.6 4.9 3 .6 6.2-.5 6.9-2.6 .7-2.1-1.6-4.3-4.6-4.9-3-.6-6.2.5-6.9 2.6zm44.2-1.7c-2.9 .8-4.8 2.8-4.3 4.8 .5 2 3.2 2.9 6.1 2.1 2.9-.8 4.8-2.8 4.3-4.8-.5-2-3.1-2.9-6.1-2.1zm44.2-1.7c-2.9 .8-4.8 2.8-4.3 4.8 .5 2 3.2 2.9 6.1 2.1 2.9-.8 4.8-2.8 4.3-4.8-.5-2-3.1-2.9-6.1-2.1zm44.2-1.7c-2.9 .8-4.8 2.8-4.3 4.8 .5 2 3.2 2.9 6.1 2.1 2.9-.8 4.8-2.8 4.3-4.8-.5-2-3.1-2.9-6.1-2.1zm44.2-1.7c-2.9 .8-4.8 2.8-4.3 4.8 .5 2 3.2 2.9 6.1 2.1 2.9-.8 4.8-2.8 4.3-4.8-.5-2-3.1-2.9-6.1-2.1zm44.2-1.7c-2.9 .8-4.8 2.8-4.3 4.8 .5 2 3.2 2.9 6.1 2.1 2.9-.8 4.8-2.8 4.3-4.8-.5-2-3.1-2.9-6.1-2.1zM248 8C111 8 0 119 0 256c0 110.3 71.5 203.9 170.8 237.2 12.5 2.3 17.1-5.4 17.1-12v-42.2c-69.5 15.1-84.1-33.7-84.1-33.7-11.4-29-27.9-36.7-27.9-36.7-22.8-15.6 1.7-15.3 1.7-15.3 25.2 1.8 38.5 25.9 38.5 25.9 22.4 38.4 58.7 27.3 73 20.9 2.3-16.2 8.8-27.3 16-33.6-55.5-6.3-113.9-27.7-113.9-123.1 0-27.2 9.7-49.4 25.6-66.8-2.6-6.3-11.1-31.8 2.4-66.3 0 0 20.9-6.7 68.5 25.5 19.9-5.5 41.3-8.2 62.6-8.3 21.3 .1 42.7 2.8 62.6 8.3 47.6-32.2 68.5-25.5 68.5-25.5 13.5 34.5 5 60 2.4 66.3 15.9 17.4 25.6 39.6 25.6 66.8 0 95.6-58.5 116.7-114.1 122.9 9 7.7 17 22.9 17 46.1v68.3c0 6.7 4.6 14.4 17.2 12C424.5 459.9 496 366.3 496 256 496 119 385 8 248 8z"/></svg>
+                </span>
+                GitHub: <b><a href="https://github.com/Whoeshlok" target="_blank" class="social-link">Whoeshlok</a></b>
+            </div>
+            <button id="backToHomeBtn">Back to Home</button>
+            <audio id="outroMusic">
+                <source src="outro.mp3" type="audio/mpeg">
+            </audio>
+        </div>
+    </div>
+
+    <script>
+        // Get score from URL parameters
+        function getScoreFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return {
+                currentScore: parseInt(urlParams.get('score')) || 0,
+                highScore: parseInt(localStorage.getItem('rioHighScore')) || 0
+            };
+        }
+
+        // Update high score if current score is higher
+        function updateHighScore(currentScore) {
+            let highScore = parseInt(localStorage.getItem('rioHighScore')) || 0;
+            if (currentScore > highScore) {
+                highScore = currentScore;
+                localStorage.setItem('rioHighScore', highScore);
+            }
+            return highScore;
+        }
+
+        // Initialize the page
+        function initGameOver() {
+            const scores = getScoreFromURL();
+            const highScore = updateHighScore(scores.currentScore);
+            
+            // Display scores
+            document.getElementById('currentScoreDisplay').textContent = scores.currentScore;
+            document.getElementById('highScoreDisplay').textContent = highScore;
+            
+            // Audio controls
+            const gameOverMusic = document.getElementById('gameOverMusic');
+            
+            // Quit button functionality
+            const quitBtn = document.getElementById('quitBtn');
+            quitBtn.addEventListener('click', function() {
+                // Stop game over music
+                if (gameOverMusic) {
+                    gameOverMusic.pause();
+                    gameOverMusic.currentTime = 0;
+                }
+                
+                // Hide game over content and show outro content
+                document.querySelector('.game-over-content').style.display = 'none';
+                document.getElementById('outroContent').style.display = 'flex';
+                document.body.classList.add('outro-active');
+                
+                // Start outro animations
+                createBokeh();
+                createOutroStars();
+                
+                // Start outro music (should work since it's on the same page!)
+                const outroMusic = document.getElementById('outroMusic');
+                if (outroMusic) {
+                    outroMusic.play().catch(e => console.log('Outro audio failed:', e));
+                }
+            });
+        }
+
+        // Back to Home button functionality
+        document.getElementById('backToHomeBtn').onclick = function() {
+            window.location.href = 'index.html';
+        };
+
+        // Create bokeh animation
+        function createBokeh() {
+            const canvas = document.getElementById('bokehCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+            const colors = ['#a1c4fd', '#fbc2eb', '#baf8d4', '#fff6b7', '#e0eafc'];
+            let circles = Array.from({length: 22}, () => ({
+              x: Math.random() * w,
+              y: Math.random() * h,
+              r: 24 + Math.random() * 32,
+              dx: (Math.random() - 0.5) * 0.3,
+              dy: (Math.random() - 0.5) * 0.3,
+              color: colors[Math.floor(Math.random() * colors.length)],
+              alpha: 0.18 + Math.random() * 0.18
+            }));
+            function draw() {
+              ctx.clearRect(0, 0, w, h);
+              for (let c of circles) {
+                ctx.save();
+                ctx.globalAlpha = c.alpha;
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.r, 0, 2 * Math.PI);
+                ctx.fillStyle = c.color;
+                ctx.shadowColor = c.color;
+                ctx.shadowBlur = 24;
+                ctx.fill();
+                ctx.restore();
+                c.x += c.dx;
+                c.y += c.dy;
+                if (c.x < -c.r) c.x = w + c.r;
+                if (c.x > w + c.r) c.x = -c.r;
+                if (c.y < -c.r) c.y = h + c.r;
+                if (c.y > h + c.r) c.y = -c.r;
+              }
+            }
+            function animate() {
+              draw();
+              requestAnimationFrame(animate);
+            }
+            animate();
+            window.addEventListener('resize', () => {
+              w = canvas.width = window.innerWidth;
+              h = canvas.height = window.innerHeight;
+            });
+        }
+
+        // Create outro stars animation
+        function createOutroStars() {
+            const canvas = document.getElementById('outroStars');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+            let stars = Array.from({length: 120}, () => ({
+              x: Math.random() * w,
+              y: Math.random() * h,
+              r: Math.random() * 1.2 + 0.3,
+              o: Math.random() * 0.5 + 0.5,
+              s: Math.random() * 0.5 + 0.2,
+              tw: Math.random() * 2.5
+            }));
+            function draw() {
+              ctx.clearRect(0, 0, w, h);
+              let t = Date.now() * 0.002;
+              for (let star of stars) {
+                ctx.globalAlpha = star.o * (0.7 + 0.3 * Math.abs(Math.sin(t + star.tw)));
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.r, 0, 2 * Math.PI);
+                ctx.fillStyle = '#fff';
+                ctx.shadowColor = '#7ecfff';
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+              }
+              ctx.globalAlpha = 1;
+            }
+            function animate() {
+              for (let star of stars) {
+                star.y += star.s;
+                if (star.y > h) {
+                  star.y = 0;
+                  star.x = Math.random() * w;
+                }
+              }
+              draw();
+              requestAnimationFrame(animate);
+            }
+            animate();
+            window.addEventListener('resize', () => {
+              w = canvas.width = window.innerWidth;
+              h = canvas.height = window.innerHeight;
+            });
+        }
+
+        // Start when page loads
+        window.addEventListener('load', initGameOver);
+
+        // Create background stars animation
+        function createBackgroundStars() {
+            const canvas = document.getElementById('backgroundStars');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+            
+            // Create different types of stars
+            let stars = Array.from({length: 150}, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 2 + 0.5,
+                o: Math.random() * 0.8 + 0.2,
+                s: Math.random() * 0.3 + 0.1,
+                tw: Math.random() * Math.PI * 2, // twinkle offset
+                type: Math.random() > 0.8 ? 'shooting' : 'twinkle' // 20% shooting stars
+            }));
+
+            // Add some shooting stars
+            let shootingStars = Array.from({length: 3}, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h * 0.5,
+                len: 80 + Math.random() * 40,
+                speed: 3 + Math.random() * 2,
+                angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
+                alpha: 0.7 + Math.random() * 0.3,
+                color: ['#4f8cff', '#ffb347', '#fff', '#ff5e62'][Math.floor(Math.random() * 4)]
+            }));
+
+            function drawStars() {
+                ctx.clearRect(0, 0, w, h);
+                let t = Date.now() * 0.001;
+
+                // Draw twinkling stars
+                for (let star of stars) {
+                    if (star.type === 'twinkle') {
+                        ctx.globalAlpha = star.o * (0.6 + 0.4 * Math.abs(Math.sin(t + star.tw)));
+                        ctx.beginPath();
+                        ctx.arc(star.x, star.y, star.r, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#fff';
+                        ctx.shadowColor = '#7ecfff';
+                        ctx.shadowBlur = 6;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+
+                // Draw shooting stars
+                for (let star of shootingStars) {
+                    ctx.save();
+                    ctx.globalAlpha = star.alpha;
+                    ctx.strokeStyle = star.color;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(star.x, star.y);
+                    ctx.lineTo(star.x - Math.cos(star.angle) * star.len, star.y - Math.sin(star.angle) * star.len);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                ctx.globalAlpha = 1;
+            }
+
+            function animateStars() {
+                // Update twinkling stars
+                for (let star of stars) {
+                    if (star.type === 'twinkle') {
+                        star.y += star.s;
+                        if (star.y > h) {
+                            star.y = 0;
+                            star.x = Math.random() * w;
+                        }
+                    }
+                }
+
+                // Update shooting stars
+                for (let star of shootingStars) {
+                    star.x += Math.cos(star.angle) * star.speed;
+                    star.y += Math.sin(star.angle) * star.speed;
+                    
+                    if (star.x > w + 100 || star.y > h + 100) {
+                        star.x = Math.random() * w;
+                        star.y = -20;
+                        star.len = 80 + Math.random() * 40;
+                        star.speed = 3 + Math.random() * 2;
+                        star.angle = Math.PI / 4 + (Math.random() - 0.5) * 0.3;
+                        star.alpha = 0.7 + Math.random() * 0.3;
+                        star.color = ['#4f8cff', '#ffb347', '#fff', '#ff5e62'][Math.floor(Math.random() * 4)];
+                    }
+                }
+
+                drawStars();
+                requestAnimationFrame(animateStars);
+            }
+
+            animateStars();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+        }
+
+        // Initialize background stars when page loads
+        window.addEventListener('load', () => {
+            initGameOver();
+            createBackgroundStars();
+        });
+    </script>
+</body>
+</html> 

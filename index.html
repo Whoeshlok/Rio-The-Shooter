@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rio the Shooter &#x1F52B;</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="space-bg">
+        <canvas id="shootingStarsBg" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:1;"></canvas>
+        <canvas id="debrisShipsBg" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:2;"></canvas>
+        <div class="stars" style="z-index:3;"></div>
+        <div class="planets" style="z-index:4;"></div>
+    </div>
+    <div class="landing-main">
+        <h1 class="game-title animated-title">Rio the Shooter <span class="emoji animated-emoji">🚀</span></h1>
+        <p class="game-desc animated-desc">Step into the galaxy as Rio! Blast your way through space, defeat enemies, and become the ultimate shooter. Ready to play? ✨</p>
+        <button id="startGame" class="start-btn">Let's Booyah! 🚀</button>
+    </div>
+    <div class="container" style="display: none;">
+        <div class="game-bg"></div>
+        <div id="scoreBoard">Score: 0</div>
+        <div id="timerBoard">Time: 60</div>
+        <audio id="gameMusic" loop>
+            <source src="game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <script>
+        // Shooting stars animation (optimized)
+        const canvas = document.getElementById('shootingStarsBg');
+        const ctx = canvas.getContext('2d');
+        let w = window.innerWidth;
+        let h = window.innerHeight;
+        canvas.width = w;
+        canvas.height = h;
+        window.addEventListener('resize', () => {
+            w = window.innerWidth;
+            h = window.innerHeight;
+            canvas.width = w;
+            canvas.height = h;
+            debrisCanvas.width = w;
+            debrisCanvas.height = h;
+        });
+        function randomColor() {
+            const colors = ['#4f8cff', '#ffb347', '#fff', '#ff5e62'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        function ShootingStar() {
+            this.x = Math.random() * w;
+            this.y = Math.random() * h * 0.7;
+            this.len = 80 + Math.random() * 40;
+            this.speed = 4 + Math.random() * 2;
+            this.angle = Math.PI / 4 + (Math.random() - 0.5) * 0.2;
+            this.alpha = 0.7 + Math.random() * 0.3;
+            this.color = randomColor();
+        }
+        ShootingStar.prototype.draw = function() {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x - Math.cos(this.angle) * this.len, this.y - Math.sin(this.angle) * this.len);
+            ctx.stroke();
+            ctx.restore();
+        };
+        ShootingStar.prototype.update = function() {
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle) * this.speed;
+            if (this.x > w + 100 || this.y > h + 100) {
+                this.x = Math.random() * w;
+                this.y = -20;
+                this.len = 80 + Math.random() * 40;
+                this.speed = 4 + Math.random() * 2;
+                this.angle = Math.PI / 4 + (Math.random() - 0.5) * 0.2;
+                this.alpha = 0.7 + Math.random() * 0.3;
+                this.color = randomColor();
+            }
+        };
+        let shootingStars = [];
+        for (let i = 0; i < 4; i++) shootingStars.push(new ShootingStar());
+        function animateStars() {
+            ctx.clearRect(0, 0, w, h);
+            for (let s of shootingStars) {
+                s.update();
+                s.draw();
+            }
+            requestAnimationFrame(animateStars);
+        }
+        animateStars();
+
+        // 3D Parallax Debris and Enemy Ships (optimized)
+        const debrisCanvas = document.getElementById('debrisShipsBg');
+        const debrisCtx = debrisCanvas.getContext('2d');
+        debrisCanvas.width = w;
+        debrisCanvas.height = h;
+        // Debris and ships at different depths
+        const layers = [
+            { count: 2, speed: 0.7, size: 60, blur: 0, alpha: 0.15 }, // far
+            { count: 3, speed: 1.2, size: 36, blur: 0, alpha: 0.22 }, // mid
+            { count: 2, speed: 2.2, size: 20, blur: 0, alpha: 0.32 }  // near
+        ];
+        // Debris shapes (asteroids, now only circles)
+        function randomDebrisShape(ctx, x, y, r, color) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.globalAlpha = 1;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 0;
+            ctx.fill();
+            ctx.restore();
+        }
+        // Generate objects
+        let debrisObjs = [];
+        layers.forEach((layer, i) => {
+            for (let j = 0; j < layer.count; j++) {
+                debrisObjs.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    r: layer.size * (0.7 + Math.random() * 0.6),
+                    speed: layer.speed * (0.7 + Math.random() * 0.6),
+                    blur: layer.blur,
+                    alpha: layer.alpha,
+                    color: i === 0 ? '#b0b8c9' : (i === 1 ? '#6e7fa3' : '#fff'),
+                    layer: i
+                });
+            }
+        });
+        function animateDebris() {
+            debrisCtx.clearRect(0, 0, w, h);
+            // Debris
+            for (let d of debrisObjs) {
+                debrisCtx.save();
+                debrisCtx.globalAlpha = d.alpha;
+                debrisCtx.filter = 'none';
+                randomDebrisShape(debrisCtx, d.x, d.y, d.r, d.color);
+                debrisCtx.restore();
+                d.x += d.speed;
+                if (d.x - d.r > w) d.x = -d.r;
+            }
+            requestAnimationFrame(animateDebris);
+        }
+        animateDebris();
+
+        // Start game button
+        document.getElementById('startGame').addEventListener('click', function() {
+            document.querySelector('.landing-main').style.display = 'none';
+            document.querySelector('.space-bg').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+            window.game = new Game();
+        });
+    </script>
+</body>
+</html> 
