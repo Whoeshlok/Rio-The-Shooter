@@ -29,7 +29,7 @@ A space-themed shooting game built with HTML5, CSS3, and JavaScript. Blast your 
 
 ## 🚀 Live Demo
 
-[Add your GitHub Pages link here after setting it up]
+[ https://whoeshlok.github.io/Rio-The-Shooter/]
 
 ## 📸 Screenshots
 
