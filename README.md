@@ -20,7 +20,7 @@ A space-themed shooting game built with HTML5, CSS3, and JavaScript. Blast your 
 - 🌠 Beautiful game over animations
 - 🏆 High score tracking
 
-## ��️ Technologies Used
+##  Technologies Used
 
 - HTML5 Canvas
 - CSS3 (Animations, Flexbox, Grid)
@@ -47,7 +47,7 @@ A space-themed shooting game built with HTML5, CSS3, and JavaScript. Blast your 
 - **Difficulty**: Spawn rate and enemy speed increase over time
 - **Visual Effects**: Particle effects, smoke trails, and explosions
 
-## �� Design Features
+##  Design Features
 
 - **Glassy UI**: Modern frosted glass effect on countdown
 - **Space Theme**: Animated stars, planets, and cosmic backgrounds
