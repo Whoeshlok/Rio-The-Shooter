@@ -33,7 +33,11 @@ A space-themed shooting game built with HTML5, CSS3, and JavaScript. Blast your 
 
 ## 📸 Screenshots
 
-[Add screenshots of your game here]
+![Screenshot (175)](https://github.com/user-attachments/assets/e2954482-e4c6-4e32-a01b-7afda199b45a)
+![Screenshot (176)](https://github.com/user-attachments/assets/c0ff0171-dfa9-4c9f-84ea-ed9ba1e0af05)
+![Screenshot (177)](https://github.com/user-attachments/assets/3a2bc271-9272-4926-a26e-09c8381951fd)
+![Screenshot (180)](https://github.com/user-attachments/assets/729937e0-debc-4a76-84cb-0c4e093b30fc)
+![Screenshot (179)](https://github.com/user-attachments/assets/13207da5-3a59-4076-905c-b706c4f46b44)
 
 ## 🎯 Game Mechanics
 
