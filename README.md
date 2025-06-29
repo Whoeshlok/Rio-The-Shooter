@@ -1,8 +1,8 @@
-# �� Rio the Shooter
+#  Rio the Shooter
 
 A space-themed shooting game built with HTML5, CSS3, and JavaScript. Blast your way through space as Rio and become the ultimate shooter!
 
-## �� How to Play
+##  How to Play
 
 - **WASD** or **Arrow Keys**: Move Rio
 - **Mouse**: Aim and shoot
